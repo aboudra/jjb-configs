@@ -1,0 +1,42 @@
+- job:
+    name: deploy-ci-job-configs
+    project-type: freestyle
+    defaults: global
+    properties:
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 200
+    disabled: false
+    node: master
+    display-name: 'CI job configs deployment'
+    scm:
+        - git:
+            url: https://github.com/aboudra/jjb-configs.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: "*/5 * * * *"
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: JJB_USER
+                variable: JJB_USER
+        - credentials-binding:
+            - text:
+                credential-id: JJB_TOKEN
+                variable: JJB_TOKEN
+    builders:
+        - shell: |
+            set -e
+
+            git clean -fdx
+            export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
+            jenkins-jobs --version
+            python run-jjb.py
