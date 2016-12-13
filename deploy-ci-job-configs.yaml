@@ -36,6 +36,9 @@
         - shell: |
             set -e
 
+            # set PATH
+            export PATH=/c/Python27:/c/Python27/Scripts:${PATH}
+
             git clean -fdx
             export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
             jenkins-jobs --version
